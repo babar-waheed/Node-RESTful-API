@@ -6,6 +6,7 @@ const logger = require('morgan');
 const multer = require('multer');
 const cors = require('cors');
 
+
 const indexRouter = require('./routes/index');  
 const usersRouter = require('./routes/users');
 const feedRouter = require('./routes/feed'); 
@@ -78,7 +79,7 @@ app.use(function(err, req, res, next) {
   res.locals.error = req.app.get('env') === 'development' ? err : err.message;
 
   // render the error page
-  res.status(err.status || 500);
+  res.status(err.status || 500); 
   res.json({
     message: err.message,
     error: res.locals.error

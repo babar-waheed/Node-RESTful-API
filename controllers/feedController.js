@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const { validationResult } = require('express-validator');
+const io = require('../socket');
 const Post = require('../models/postModel');
 const User = require('../models/userModel');
 /* GET /feed/posts */
@@ -48,7 +49,7 @@ exports.createPost = (req, res, next) => {
         creator: req.userId,
     })
     post.save()
-    .then(user => {  
+    .then(user => { 
         return User.findById(req.userId)
     })
     .then(user => {
@@ -58,6 +59,11 @@ exports.createPost = (req, res, next) => {
         return user.save();
     })
     .then(result => {
+        console.log("IO: ", io);
+        io.getIO().emit('posts', {
+            action: 'create', 
+            post: post
+        })
         res.status(201).json({
             message: "Post created successfully!",
             post: post,
