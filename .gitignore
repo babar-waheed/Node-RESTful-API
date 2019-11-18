@@ -17,6 +17,7 @@ utils.js
 node_modules
 *.log
 *.gz
+/public/images
 
 
 # Coveralls

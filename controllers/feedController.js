@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 const { validationResult } = require('express-validator');
 const Post = require('../models/postModel');
 
@@ -62,11 +65,58 @@ exports.getPost =  (req, res, next) => {
         .then(post => {
             res.status(200)
                 .json({
-                    status: req.status,
                     post: post
                 })
         })  
         .catch(err => {
             next(err)
         })
+}
+
+/* PUT /feed/post/postId */
+exports.putPost =  (req, res, next) => {
+
+    const id = req.params.postId;
+    const title = req.body.title;
+    const content = req.body.content;
+    let imageUrl = req.body.image;
+
+    console.log("CONTROLLER [PUTPOST]", req.body, id)
+
+    if(req.file){
+        console.log("req.file", req.file);
+
+        imageUrl = req.file.path.replace('public/', '');
+        console.log("req.file.path", imageUrl);
+    }
+
+    Post.findById(id)
+        .then(post => {
+            console.log("POST", post);
+            if(imageUrl !== post.imageUrl){
+                clearImage(post.imageUrl)
+            }
+            post.title = title;
+            post.imageUrl = imageUrl;
+            post.content = content;
+            return post.save();
+        })  
+        .then(result => {
+            res.status(200)
+                .json({
+                    message: "Post updated successfully!",
+                    post: result
+                })
+        })
+        .catch(err => {
+            next(err)
+        })
+}
+
+const clearImage = filePath => {
+    filePath = path.join(__dirname, '../public', filePath)
+    console.log("[filePath]", filePath)
+    fs.unlink(filePath, err => {
+        console.log(err);
+    });
 }
