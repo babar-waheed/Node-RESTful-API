@@ -2,18 +2,18 @@ const { validationResult } = require('express-validator');
 const Post = require('../models/postModel');
 
 exports.getPosts = (req, res, next) => {
-    res.status(200).json({posts :[
-        {
-            _id: 1,
-            title: "My Post",
-            content: "This is my content",
-            imageUrl: "images/duck.jpg",
-            creator: {
-                name: "Babar"
-            },
-            date: new Date()
-        }
-    ]})
+
+    Post.find()
+        .then(post => {
+            res.status(200)
+                .json({
+                    status: req.status,
+                    posts: post
+                })
+        })  
+        .catch(err => {
+            next(err)
+        })
 }
 
 exports.createPost = (req, res, next) => {
@@ -21,7 +21,7 @@ exports.createPost = (req, res, next) => {
     const errors = validationResult(req);
 
     if(!errors.isEmpty()){
-        res.status(422).json({ 
+        return res.status(422).json({ 
             status: 422,
             message: "Validation failed",
             errors: errors.array()
@@ -32,10 +32,11 @@ exports.createPost = (req, res, next) => {
     const content = req.body.content;
 
     const post = new Post({
-        title: title,
+        // title: title,
         content: content,
         imageUrl: 'images/duck.jpg',
-        creator: { name: "Babs"}
+        creator: { name: "Babs"},
+        test: "AFD"
     })
     post.save()
     .then(result => {
@@ -47,8 +48,24 @@ exports.createPost = (req, res, next) => {
 
     })
     .catch(err => {
-        throw err;
+        next(err);
     })
 
     
+}
+
+exports.getPost =  (req, res, next) => {
+    const id = req.params.postId;
+
+    Post.findById(id)
+        .then(post => {
+            res.status(200)
+                .json({
+                    status: req.status,
+                    post: post
+                })
+        })  
+        .catch(err => {
+            next(err)
+        })
 }
