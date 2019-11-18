@@ -7,17 +7,30 @@ const Post = require('../models/postModel');
 /* GET /feed/posts */
 exports.getPosts = (req, res, next) => {
 
+    const currentPage = req.query.page || 1;
+    const perPage = 2;
+    let totalItems;
+
     Post.find()
-        .then(post => {
-            res.status(200)
-                .json({
-                    status: req.status,
-                    posts: post
-                })
-        })  
-        .catch(err => {
-            next(err)
-        })
+    .countDocuments()
+    .then(count => {
+        totalItems = count;
+        return Post.find()
+            .skip((currentPage -1) * perPage) 
+            .limit(perPage)
+
+    })
+    .then(post => {
+        res.status(200)
+            .json({
+                message: "Posts loaded successfully.",
+                posts: post,
+                totalItems: totalItems
+            })
+    })  
+    .catch(err => {
+        next(err)
+    })
 }
 
 /* POST /feed/posts */
