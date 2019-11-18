@@ -39,10 +39,7 @@ exports.createPost = (req, res, next) => {
     console.log("[CREATING POST]", req.file);
     const errors = validationResult(req);
     if(!errors.isEmpty() || !req.file){
-        return res.status(422).json({ 
-            message: "Validation failed",
-            errors: errors
-        })
+        throw new Error('Validation failed');
     }
 
     const title = req.body.title;

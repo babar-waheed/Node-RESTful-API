@@ -1,8 +1,9 @@
 const { validationResult } = require('express-validator');
+const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const bycrypt = require('bcryptjs');
 
-/* PUT /feed/posts */
+/* PUT /auth/signup */
 exports.signUp = (req, res, next) => {
 
     console.log('[User signup!]')
@@ -15,36 +16,82 @@ exports.signUp = (req, res, next) => {
     const name = req.body.name;
     const password = req.body.password;
 
-    bycrypt.hash(password, 12)
-        .then(hashedPassword => {
-            const user = new User({
-                email: email,
-                password: hashedPassword,
-                name: name 
-            })
-
-            return user.save();
-        })
+    User.findOne({email: email})
         .then(user => {
-            res.status(201)
-                .json({
-                    message: "User Created",
-                    userId: user._id
-                })
+            console.log("user [1] [] []", user)
+            if(user) {
+                 throw new Error('User already exists');
+
+            }else{
+
+                bycrypt.hash(password, 12)
+                    .then(hashedPassword => {
+                        console.log("hashedPassword [2] [] []", hashedPassword)
+                        const user = new User({
+                            email: email,
+                            password: hashedPassword,
+                            name: name 
+                        })
+                        return user.save();
+                    })
+                    .then(user => {
+                        console.log("user [3] [] []",user);
+                        res.status(201)
+                            .json({
+                                message: "User Created",
+                                userId: user._id
+                            })
+                    })
+                    .catch(err => {
+                        console.log("[Err]:", err);
+                        next(err)
+                    })
+            }
         })
         .catch(err => {
-            console.log("Inside Catch", err);
+            console.log("[Err]:", err);
             next(err)
         })
-
-
-
 }
 
+/* POST /auth/login */
+exports.login = (req, res, next) => {
 
-/* PUT /feed/posts */
-exports.p = (req, res, next) => {
-    
+    console.log("[LOGIN]");
+
+    const email = req.body.email;
+    const password = req.body.password;
+    let loadedUser;
+
+    User.findOne({email: email})
+        .then(user => {
+            if(!user) {
+                throw new Error("Email doesn't exits")
+            }else{
+                loadedUser = user;
+                return bycrypt.compare(password, user.password);   
+            }            
+        })
+        .then(isEqual => {
+            if(!isEqual){
+                throw new Error("Invalid email/password")
+            }else{
+                const token = jwt.sign({
+                    email: loadedUser.email,
+                    userId: loadedUser._id.toString()
+                }, 'PRIVATE_KEY', {expiresIn: '1h'})
+                
+                res.status(200)
+                    .json({
+                        token: token,
+                        userId: loadedUser._id.toString()
+                    })
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            next(err)
+        })
 }
 
 /* PUT /feed/posts */
