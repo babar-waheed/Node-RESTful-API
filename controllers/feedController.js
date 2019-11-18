@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const Post = require('../models/postModel');
 
+/* GET /feed/posts */
 exports.getPosts = (req, res, next) => {
 
     Post.find()
@@ -16,27 +17,27 @@ exports.getPosts = (req, res, next) => {
         })
 }
 
+/* POST /feed/posts */
 exports.createPost = (req, res, next) => {
 
+    console.log("[CREATING POST]", req.file);
     const errors = validationResult(req);
-
-    if(!errors.isEmpty()){
+    if(!errors.isEmpty() || !req.file){
         return res.status(422).json({ 
-            status: 422,
             message: "Validation failed",
-            errors: errors.array()
+            errors: errors
         })
     }
 
     const title = req.body.title;
     const content = req.body.content;
+    const imageUrl = req.file.path.replace('public/', '');
 
     const post = new Post({
-        // title: title,
+        title: title,
         content: content,
-        imageUrl: 'images/duck.jpg',
+        imageUrl: imageUrl,
         creator: { name: "Babs"},
-        test: "AFD"
     })
     post.save()
     .then(result => {
@@ -50,10 +51,10 @@ exports.createPost = (req, res, next) => {
     .catch(err => {
         next(err);
     })
-
     
 }
 
+/* GET /feed/post/postId */
 exports.getPost =  (req, res, next) => {
     const id = req.params.postId;
 
