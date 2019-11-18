@@ -110,6 +110,10 @@ exports.putPost =  (req, res, next) => {
 
     Post.findById(id)
         .then(post => {
+
+            if(post.creator.toString() !== req.userId){
+                throw new Error('Not authorized');
+            }
             console.log("POST", post);
             if(imageUrl !== post.imageUrl){
                 clearImage(post.imageUrl)
@@ -139,16 +143,26 @@ exports.deletePost =  (req, res, next) => {
 
     Post.findById(id)
     .then(post => {
-        //check logged in user TODO
+        if(post.creator.toString() !== req.userId){
+            throw new Error('Not authorized');
+        }
+
         clearImage(post.imageUrl);
         return Post.findByIdAndRemove(id)
     })
     .then(result => {
+        return User.findById(req.userId)
+    })
+    .then(user => {
+        user.posts.pull(postId);
+        return user.save()
+    })
+    .then(result => {    
         res.status(200)
-                .json({
-                    message: "Post deleted successfully!",
-                    post: result
-                })
+            .json({
+                message: "Post deleted successfully!",
+                post: result
+            })
     })
     .catch(err => {
         console.log(err);    
