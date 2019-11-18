@@ -113,6 +113,31 @@ exports.putPost =  (req, res, next) => {
         })
 }
 
+/* DELETE /feed/post/postId */
+exports.deletePost =  (req, res, next) => {
+
+    console.log('[Deleting Post]');
+    const id = req.params.postId;
+
+    Post.findById(id)
+    .then(post => {
+        //check logged in user TODO
+        clearImage(post.imageUrl);
+        return Post.findByIdAndRemove(id)
+    })
+    .then(result => {
+        res.status(200)
+                .json({
+                    message: "Post deleted successfully!",
+                    post: result
+                })
+    })
+    .catch(err => {
+        console.log(err);    
+        next(err);
+    })
+}
+
 const clearImage = filePath => {
     filePath = path.join(__dirname, '../public', filePath)
     console.log("[filePath]", filePath)
