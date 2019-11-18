@@ -9,7 +9,7 @@ const feedController = require('../controllers/feedController');
 router.get('/posts', isAuth, feedController.getPosts);
 
 /* POST /feed/posts */
-router.post('/post', [ 
+router.post('/post', isAuth,[ 
     body('title')
     .trim()
     .isLength({min: 5}),
@@ -19,10 +19,10 @@ router.post('/post', [
 ],feedController.createPost);
 
 /* GET /feed/post/postId */
-router.get('/post/:postId', feedController.getPost);
+router.get('/post/:postId', isAuth, feedController.getPost);
 
 /* PUT /feed/post/postId */
-router.put('/post/:postId', [
+router.put('/post/:postId', isAuth, [
     body('title')
     .trim()
     .isLength({min: 5}),
