@@ -94,7 +94,37 @@ exports.login = (req, res, next) => {
         })
 }
 
-/* PUT /feed/posts */
-exports.p = (req, res, next) => {
+exports.getUserStatus = (req, res, next) => {
+
+    User.findById(req.userId)
+      .then(user => {
+        if (!user) {
+            throw new Error('User not found')
+        }
+        res.status(200).json({ status: user.status });
+      })
+      .catch(err => {
+        next(err);
+      });
+  };
+  
+  exports.updateUserStatus = (req, res, next) => {
+    const newStatus = req.body.status;
+
+    console.log("newStatus", newStatus);
     
-}
+    User.findById(req.userId)
+      .then(user => {
+        if (!user) {
+            throw new Error('User not found')
+        }
+        user.status = newStatus;
+        return user.save();
+      })
+      .then(result => {
+        res.status(200).json({ message: 'User updated.' });
+      })
+      .catch(err => {
+        next(err); 
+      });
+  };

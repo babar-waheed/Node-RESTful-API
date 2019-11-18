@@ -5,32 +5,26 @@ const { validationResult } = require('express-validator');
 const Post = require('../models/postModel');
 const User = require('../models/userModel');
 /* GET /feed/posts */
-exports.getPosts = (req, res, next) => {
+exports.getPosts = async (req, res, next) => {
 
     const currentPage = req.query.page || 1;
     const perPage = 2;
-    let totalItems;
-
-    Post.find()
-    .countDocuments()
-    .then(count => {
-        totalItems = count;
-        return Post.find()
-            .skip((currentPage -1) * perPage) 
-            .limit(perPage)
-
-    })
-    .then(post => {
+    try{
+        const totalItems = await Post.find().countDocuments()
+        const post = await Post.find()
+        .skip((currentPage -1) * perPage) 
+        .limit(perPage)
+    
         res.status(200)
-            .json({
-                message: "Posts loaded successfully.",
-                posts: post,
-                totalItems: totalItems
-            })
-    })  
-    .catch(err => {
-        next(err)
-    })
+        .json({
+            message: "Posts loaded successfully.",
+            posts: post,
+            totalItems: totalItems
+        })
+
+    }catch(err){
+        next(err);
+    }
 }
 
 /* POST /feed/posts */
